@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xb.dao.AdminDao">
+    <select id="login" resultType="Admin" parameterType="LoginForm">
+        select * from tb_admin where name = #{username} and password = #{password}
+    </select>
+
+    <!--根据姓名模糊查询管理员信息-->
+    <select id="selectList" parameterType="Admin" resultType="Admin">
+        select * from tb_admin
+        <where>
+            <if test="name!=null and name != ''">
+                and name like concat(concat('%',#{name}),'%')
+            </if>
+        </where>
+    </select>
+
+    <!--根据姓名查询用户是否存在-->
+    <select id="findByName" resultType="Admin" parameterType="String">
+        select * from tb_admin where  name = #{name}
+    </select>
+
+    <!--插入数据-->
+    <insert id="insert" parameterType="Admin">
+        insert into tb_admin(name, gender, password, email, telephone, address, portrait_path)
+        values (#{name}, #{gender}, #{password}, #{email}, #{telephone}, #{address}, #{portrait_path})
+    </insert>
+
+    <!--根据id删除用户-->
+    <delete id="deleteById" >
+        delete from tb_admin where id in 
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+
+    <!--根据id修改用户信息-->
+    <update id="update" parameterType="admin">
+        UPDATE tb_admin
+        <set>
+            <if test="name!=null and name!=''">name=#{name},</if>
+            <if test="gender!=null and gender!=''">gender=#{gender},</if>
+            <if test="email!=null and email!=''">email=#{email},</if>
+            <if test="telephone!=null and telephone!=''">telephone=#{telephone},</if>
+            <if test="address!=null and address!=''">address=#{address},</if>
+            <if test="portrait_path!=null and portrait_path!=''">portrait_path=#{portrait_path},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+</mapper>

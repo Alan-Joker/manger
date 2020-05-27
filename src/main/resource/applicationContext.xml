@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop
+		http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+    <description>Spring configuration file</description>
+
+    <!--配置dao层开始-->
+    <context:property-placeholder location="classpath:c3p0.properties"/>
+
+    <!--配置数据源-->
+    <bean id="datasource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driverClass}"/>
+        <property name="jdbcUrl" value="${jdbc.Url}"/>
+        <property name="user" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <!--初始化连接数-->
+        <property name="initialPoolSize" value="${jdbc.initialPoolSize}"/>
+        <!--最大连接数-->
+        <property name="maxPoolSize" value="${jdbc.maxPoolSize}"/>
+        <!--最小连接数-->
+        <property name="minPoolSize" value="${jdbc.minPoolSize}"/>
+        <!--连接得生存时间-->
+        <property name="maxIdleTime" value="${jdbc.maxIdleTime}"/>
+    </bean>
+
+    <!--配置生菜SqlSession对象工厂-->
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--引入数据源-->
+        <property name="dataSource" ref="datasource"/>
+        <!--配置别名-->
+        <property name="typeAliasesPackage" value="com.xb.domain"/>
+
+        <!-- 引入插件 -->
+        <property name="plugins">
+            <array>
+                <!-- 引入MyBaits分页插件 -->
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <!-- 指定数据库类型 -->
+                        <value>helperDialct=mysql</value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+    <!--扫描包下接口，将代理对象放入ioc容器-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.xb.dao"/>
+    </bean>
+    <!--配置dao层结束-->
+
+    <!--配置service层开始-->
+
+    <!--组件扫描配置-->
+    <context:component-scan base-package="com.xb">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--配置事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="datasource"/>
+    </bean>
+
+    <!-- 开启事务注解扫描 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!--配置service层结束-->
+</beans>
